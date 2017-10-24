@@ -5,8 +5,7 @@ const style = fs.readFileSync(`${__dirname}/../client/style.css`);
 
 const crypto = require('crypto');
 
-const users = {};
-const units = {};
+const users = {}; // list of users
 const etag = crypto.createHash('sha1').update(JSON.stringify(users));
 const digest = etag.digest('hex');
 
@@ -55,42 +54,16 @@ const getUsers = (request, response) => {
   const responseJSON = {
     users,
   };
-  /*
-  if (request.headers['if-none-match'] === digest) {
-    // return 304 response without message 
-    return respondJSONMeta(request, response, 304);
-  }
-*/
   return respondJSON(request, response, 200, responseJSON);
 };
 
-const addUnit = (request, response, body) => {
-  const responseJSON = {
-    message: 'Name is required',
-  };
-  
-  let responseCode = 201;
-  
-  units[body.name].name = body.name;
-  units[body.weapon].weapon = body.weapon;
-  units[body.assist].assist = body.assist;
-  units[body.special].special = body.special;
-  units[body.skillA].skillA = body.skillA;
-  units[body.skillB].skillB = body.skillB;
-  units[body.skillC].skillC = body.skillC;
-  //units[body.seal].seal = body.seal;
-  
-  return respondJSON(request, response, responseCode);
-
-  
-};
-
+// adds user and their note to the list
 const addUser = (request, response, body) => {
   const responseJSON = {
-    message: 'Name and age are both required',
+    message: 'Name and Note are both required',
   };
 
-  if (!body.name || !body.age) {
+  if (!body.name || !body.note) {
     responseJSON.id = 'missingParams';
     return respondJSON(request, response, 400, responseJSON);
   }
@@ -105,16 +78,17 @@ const addUser = (request, response, body) => {
   }
 
   users[body.name].name = body.name;
-  users[body.name].age = body.age;
+  users[body.name].note = body.note;
 
   if (responseCode === 201) {
-    responseJSON.message = `Name: ${users[body.name].name} , Age: ${users[body.name].age}`;
+    responseJSON.message = `Name: ${users[body.name].name} , Note: ${users[body.name].note}`;
     return respondJSON(request, response, responseCode, responseJSON);
   }
 
   return respondJSON(request, response, responseCode);
 };
 
+// returns successful response
 const success = (request, response) => {
   // message to send
   const responseJSON = {
@@ -126,6 +100,7 @@ const success = (request, response) => {
   respondJSON(request, response, 200, responseJSON);
 };
 
+// returns unfound response
 const notReal = (request, response) => {
   // error message with a description and consistent error id
   const responseJSON = {
@@ -144,6 +119,7 @@ const notRealMeta = (request, response) => {
   respondJSONMeta(request, response, 404);
 };
 
+// get meta info about user object
 const getUsersMeta = (request, response) => {
   if (request.headers['if-none-match'] === digest) {
     return respondJSONMeta(request, response, 304);
